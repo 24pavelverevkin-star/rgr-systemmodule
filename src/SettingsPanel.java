@@ -8,13 +8,17 @@ public class SettingsPanel extends JPanel {
     private ChooseData chooseDataTrucksCount;
     private ChooseData chooseDataSeedersCount;
     
-    // Генераторы случайных величин (РГР Этап 2) [cite: 292, 1950]
-    private ChooseRandom chooseRandomTruckTravel; // Время грузовика в пути
-    private ChooseRandom chooseRandomSeederWork;  // Время высева сеялки
-    private ChooseRandom chooseRandomSeederLoad;  // Время заправки сеялки от грузовика
-    private ChooseRandom chooseRandomTruckLoad;   // Время загрузки грузовика на складе
+    // Генератори випадкових величин (РГР Етап 2)
+    private ChooseRandom chooseRandomTruckTravel; 
+    private ChooseRandom chooseRandomSeederWork;  
+    private ChooseRandom chooseRandomSeederLoad;  
+    private ChooseRandom chooseRandomTruckLoad;   
+    
+    // Кнопка керування моделюванням
+    private JButton buttonStart;
 
     public SettingsPanel() {
+        // GridLayout(8, 1) вміщує 7 параметрів + 1 кнопку
         setLayout(new GridLayout(8, 1, 5, 5));
         setBorder(BorderFactory.createTitledBorder("Параметри моделі"));
 
@@ -30,7 +34,6 @@ public class SettingsPanel extends JPanel {
         chooseDataSeedersCount.setTitle("Кількість сівалок");
         chooseDataSeedersCount.setInt(5);
 
-        // Настройка генераторов случайных чисел [cite: 1511]
         chooseRandomTruckTravel = new ChooseRandom();
         chooseRandomTruckTravel.setTitle("Час вантажівки у дорозі");
         
@@ -43,6 +46,10 @@ public class SettingsPanel extends JPanel {
         chooseRandomTruckLoad = new ChooseRandom();
         chooseRandomTruckLoad.setTitle("Час завантаження вантажівки");
 
+        // Ініціалізація кнопки
+        buttonStart = new JButton("Старт");
+
+        // Додавання всіх компонентів на панель
         add(chooseDataFinishTime);
         add(chooseDataTrucksCount);
         add(chooseDataSeedersCount);
@@ -50,9 +57,10 @@ public class SettingsPanel extends JPanel {
         add(chooseRandomSeederWork);
         add(chooseRandomSeederLoad);
         add(chooseRandomTruckLoad);
+        add(buttonStart); // 8-й компонент
     }
 
-    // Публичные геттеры для доступа из модели и GUI 
+    // Геттери для доступу до компонентів
     public ChooseData getChooseDataFinishTime() { return chooseDataFinishTime; }
     public ChooseData getChooseDataTrucksCount() { return chooseDataTrucksCount; }
     public ChooseData getChooseDataSeedersCount() { return chooseDataSeedersCount; }
@@ -60,4 +68,5 @@ public class SettingsPanel extends JPanel {
     public ChooseRandom getChooseRandomSeederWork() { return chooseRandomSeederWork; }
     public ChooseRandom getChooseRandomSeederLoad() { return chooseRandomSeederLoad; }
     public ChooseRandom getChooseRandomTruckLoad() { return chooseRandomTruckLoad; }
+    public JButton getButtonStart() { return buttonStart; }
 }

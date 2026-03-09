@@ -3,14 +3,13 @@ import java.awt.*;
 
 public class Gui extends JFrame {
     
-    // Оголошуємо поля класу, щоб вони були доступні в усьому коді
     private SettingsPanel settingsPanel;
-    private TestPanel testPanel; // Додано поле для панелі тестування
+    private TestPanel testPanel; 
 
     public Gui() {
         setTitle("Моделювання посівної компанії - Веревкін Павло");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(850, 600);
+        setSize(900, 650);
         setLocationRelativeTo(null);
 
         // Головний роздільник
@@ -18,11 +17,11 @@ public class Gui extends JFrame {
         splitPane.setDividerLocation(300);
         add(splitPane, BorderLayout.CENTER);
 
-        // 1. Створюємо ліву панель налаштувань
+        // 1. Створення лівої панелі (Налаштування)
         settingsPanel = new SettingsPanel();
         splitPane.setLeftComponent(settingsPanel);
 
-        // 2. Створюємо праву панель з вкладками
+        // 2. Створення правої панелі з вкладками
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // Вкладка "ТЗ"
@@ -30,7 +29,7 @@ public class Gui extends JFrame {
         tzPanel.add(new JScrollPane(UIFactory.createTzPane()), BorderLayout.CENTER);
         tabbedPane.addTab("ТЗ", tzPanel);
 
-        // Вкладка "Test" (РГР Етап 2) - Створюємо ДО того, як додавати слухача
+        // Вкладка "Test" (Створюємо ПЕРЕД налаштуванням слухача)
         testPanel = new TestPanel();
         tabbedPane.addTab("Test", testPanel);
 
@@ -39,28 +38,34 @@ public class Gui extends JFrame {
 
         splitPane.setRightComponent(tabbedPane);
 
-        // 3. Налаштовуємо слухача для автоматичного оновлення осей діаграм
-        // Тепер testPanel вже існує, тому помилки не буде
-        settingsPanel.getChooseDataFinishTime().addCaretListener(e -> {
-            try {
-                double time = settingsPanel.getChooseDataFinishTime().getDouble();
-                // Налаштування масштабу діаграм на основі введеного часу
-                testPanel.getDiagramSeederQueue().setHorizontalMaxText(String.valueOf(time));
-                testPanel.getDiagramTruckQueue().setHorizontalMaxText(String.valueOf(time));
-            } catch (Exception ex) {
-                // Ігноруємо порожні або некоректні значення при введенні
-            }
+        // 3. Логіка взаємодії компонентів
+        
+        // Автоматичне оновлення осей діаграм при зміні часу моделювання
+        settingsPanel.getChooseDataFinishTime().addCaretListener(e -> updateDiagramScales());
+
+        // Обробка натискання кнопки "Старт"
+        settingsPanel.getButtonStart().addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "Запуск моделювання...");
+            // Тут буде код запуску моделі на наступному етапі
         });
         
-        // Викликаємо оновлення один раз при запуску для початкових значень
+        // Початкове налаштування осей при запуску програми
         updateDiagramScales();
     }
 
-    // Допоміжний метод для початкового налаштування осей
+    /**
+     * Метод для синхронізації часу моделювання з горизонтальною віссю діаграм
+     */
     private void updateDiagramScales() {
-        double time = settingsPanel.getChooseDataFinishTime().getDouble();
-        testPanel.getDiagramSeederQueue().setHorizontalMaxText(String.valueOf(time));
-        testPanel.getDiagramTruckQueue().setHorizontalMaxText(String.valueOf(time));
+        try {
+            double time = settingsPanel.getChooseDataFinishTime().getDouble();
+            if (testPanel != null) {
+                testPanel.getDiagramSeederQueue().setHorizontalMaxText(String.valueOf(time));
+                testPanel.getDiagramTruckQueue().setHorizontalMaxText(String.valueOf(time));
+            }
+        } catch (Exception ex) {
+            // Ігноруємо помилки під час введення
+        }
     }
 
     public SettingsPanel getSettings() {
