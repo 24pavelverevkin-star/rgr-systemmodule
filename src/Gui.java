@@ -38,6 +38,11 @@ public class Gui extends JFrame {
         settingsPanel.getChooseDataFinishTime().addCaretListener(e -> updateDiagrams());
         
         updateDiagrams(); // Початкове налаштування
+
+        settingsPanel.getButtonStart().addActionListener(e -> {
+    System.out.println("Кнопка натиснута!"); // Вивід у консоль для тесту
+    JOptionPane.showMessageDialog(this, "Запуск моделювання...");
+});
     }
 
     private void updateDiagrams() {
