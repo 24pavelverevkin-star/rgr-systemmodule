@@ -34,15 +34,43 @@ public class Gui extends JFrame {
 
         splitPane.setRightComponent(tabbedPane);
 
-        // Автоматичне оновлення осей діаграм [cite: 521, 2256]
+        // Автоматичне оновлення осей діаграм
         settingsPanel.getChooseDataFinishTime().addCaretListener(e -> updateDiagrams());
         
         updateDiagrams(); // Початкове налаштування
 
-        settingsPanel.getButtonStart().addActionListener(e -> {
-    System.out.println("Кнопка натиснута!"); // Вивід у консоль для тесту
-    JOptionPane.showMessageDialog(this, "Запуск моделювання...");
-});
+        // Запуск моделювання при натисканні на кнопку "Старт"
+        settingsPanel.getButtonStart().addActionListener(e -> startTest());
+    }
+
+    // Геттери для доступу до панелей з класу Model
+    public SettingsPanel getSettingsPanel() { return settingsPanel; }
+    public TestPanel getTestPanel() { return testPanel; }
+
+    // Метод запуску процесу моделювання у режимі тестування
+    private void startTest() {
+        // Очищаємо діаграми перед новим запуском
+        testPanel.getDiagramSeederQueue().clear();
+        testPanel.getDiagramTruckQueue().clear();
+
+        // Створюємо диспетчера
+        process.Dispatcher dispatcher = new process.Dispatcher();
+        
+        // Встановлюємо час моделювання з налаштувань
+        dispatcher.setFinishTime(settingsPanel.getChooseDataFinishTime().getDouble());
+
+        // Створюємо модель
+        Model model = new Model(dispatcher, this);
+
+        // Робимо кнопку «Старт» недоступною на період роботи моделі
+        settingsPanel.getButtonStart().setEnabled(false);
+        dispatcher.addDispatcherFinishListener(() -> settingsPanel.getButtonStart().setEnabled(true));
+
+        // Готуємо модель до роботи у режимі тестування
+        model.initForTest();
+
+        // Запускаємо модель
+        dispatcher.start();
     }
 
     private void updateDiagrams() {

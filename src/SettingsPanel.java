@@ -63,5 +63,7 @@ public class SettingsPanel extends JPanel {
     public ChooseRandom getChooseRandomSeederWork() { return chooseRandomSeederWork; }
     public ChooseRandom getChooseRandomSeederLoad() { return chooseRandomSeederLoad; }
     public ChooseRandom getChooseRandomTruckLoad() { return chooseRandomTruckLoad; }
+    public ChooseData getChooseDataTrucksCount() { return chooseDataTrucksCount; }
+    public ChooseData getChooseDataSeedersCount() { return chooseDataSeedersCount; }
     public JButton getButtonStart() { return buttonStart; }
 }
