@@ -1,23 +1,25 @@
 import process.Dispatcher;
 import process.MultiActor;
-import qusystem.QueueForTransactions;
-import stat.Histo;
+import process.QueueForTransactions; // Виправлений імпорт пакету
+import stat.DiscretHisto; 
 
 public class Model {
     private Dispatcher dispatcher;
     private Gui gui;
     
-    // Структурні компоненти моделі
     private QueueForTransactions<Truck> queueTruckQueue;
     private QueueForTransactions<Seeder> queueSeederQueue;
     
-    // Багатоканальні актори (бригади)
     private MultiActor trucks;
     private MultiActor seeders;
     
-    // Гістограми ініціалізуємо одразу
-    private Histo histoTruckQueue = new Histo();
-    private Histo histoSeederQueue = new Histo();
+    // Гістограми розміру черг
+    DiscretHisto histoTruckQueue = new DiscretHisto();
+    DiscretHisto histoSeederQueue = new DiscretHisto();
+    
+    // Оригінали об'єктів для бригад
+    private Truck originalTruck;
+    private Seeder originalSeeder;
     
     public Model(Dispatcher dispatcher, Gui gui) {
         this.dispatcher = dispatcher;
@@ -25,48 +27,59 @@ public class Model {
         componentsToStartList(); 
     }
     
-    // Реєстрація акторів у диспетчері для старту
     public void componentsToStartList() {
         dispatcher.addStartingActor(getTrucks());
         dispatcher.addStartingActor(getSeeders());
     }
     
-    // Підготовка моделі до візуального тестування
     public void initForTest() {
-        // Прив'язка черг до Painter-ів діаграм на графічному інтерфейсі
         getQueueTruckQueue().setPainter(gui.getTestPanel().getDiagramTruckQueue().getPainter());
         getQueueSeederQueue().setPainter(gui.getTestPanel().getDiagramSeederQueue().getPainter());
         
-        // Увімкнення виводу подій в консоль
-        dispatcher.setProtocolToConsole(true);
+        // Виправлений метод для виводу протоколу в консоль [cite: 1]
+        dispatcher.setProtocolFileName("Console"); 
     }
-    
-    // --- Методи відкладеної ініціалізації ---
     
     public QueueForTransactions<Truck> getQueueTruckQueue() {
         if (queueTruckQueue == null) {
-            queueTruckQueue = new QueueForTransactions<>("Черга вантажівок", dispatcher);
+            queueTruckQueue = new QueueForTransactions<>("Черга вантажівок", dispatcher, histoTruckQueue);
         }
         return queueTruckQueue;
     }
     
     public QueueForTransactions<Seeder> getQueueSeederQueue() {
         if (queueSeederQueue == null) {
-            queueSeederQueue = new QueueForTransactions<>("Черга сівалок", dispatcher);
+            queueSeederQueue = new QueueForTransactions<>("Черга сівалок", dispatcher, histoSeederQueue);
         }
         return queueSeederQueue;
+    }
+
+    // --- Оригінали акторів та їх клонування ---
+
+    public Truck getOriginalTruck() {
+        if (originalTruck == null) {
+            originalTruck = new Truck();
+            originalTruck.setNameForProtocol("Вантажівка");
+            originalTruck.setFinishTime(gui.getSettingsPanel().getChooseDataFinishTime().getDouble());
+        }
+        return originalTruck;
+    }
+
+    public Seeder getOriginalSeeder() {
+        if (originalSeeder == null) {
+            originalSeeder = new Seeder();
+            originalSeeder.setNameForProtocol("Сівалка");
+            originalSeeder.setFinishTime(gui.getSettingsPanel().getChooseDataFinishTime().getDouble());
+        }
+        return originalSeeder;
     }
     
     public MultiActor getTrucks() {
         if (trucks == null) {
             trucks = new MultiActor();
             trucks.setNameForProtocol("Бригада вантажівок");
-            int count = gui.getSettingsPanel().getChooseDataTrucksCount().getInt();
-            for (int i = 0; i < count; i++) {
-                Truck truck = new Truck();
-                truck.setNameForProtocol("Вантажівка " + (i + 1));
-                trucks.add(truck);
-            }
+            trucks.setOriginal(getOriginalTruck()); 
+            trucks.setNumberOfClones(gui.getSettingsPanel().getChooseDataTrucksCount().getInt()); 
         }
         return trucks;
     }
@@ -75,12 +88,8 @@ public class Model {
         if (seeders == null) {
             seeders = new MultiActor();
             seeders.setNameForProtocol("Бригада сівалок");
-            int count = gui.getSettingsPanel().getChooseDataSeedersCount().getInt();
-            for (int i = 0; i < count; i++) {
-                Seeder seeder = new Seeder();
-                seeder.setNameForProtocol("Сівалка " + (i + 1));
-                seeders.add(seeder);
-            }
+            seeders.setOriginal(getOriginalSeeder());
+            seeders.setNumberOfClones(gui.getSettingsPanel().getChooseDataSeedersCount().getInt());
         }
         return seeders;
     }

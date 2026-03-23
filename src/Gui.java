@@ -55,9 +55,6 @@ public class Gui extends JFrame {
 
         // Створюємо диспетчера
         process.Dispatcher dispatcher = new process.Dispatcher();
-        
-        // Встановлюємо час моделювання з налаштувань
-        dispatcher.setFinishTime(settingsPanel.getChooseDataFinishTime().getDouble());
 
         // Створюємо модель
         Model model = new Model(dispatcher, this);
