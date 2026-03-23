@@ -1,5 +1,5 @@
 import java.awt.BorderLayout;
-
+import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -9,9 +9,11 @@ import javax.swing.SwingUtilities;
 
 import stat.Histo;
 import widgets.ChooseData;
+import widgets.ChooseRandom;
 import widgets.Diagram;
 
 public class MathRandomTest extends JFrame {
+    private ChooseRandom chooseRandom; 
     private ChooseData sampleSizeInput;
     private JButton startButton;
     private Diagram diagram;
@@ -19,42 +21,66 @@ public class MathRandomTest extends JFrame {
     private Histo histo;
 
     public MathRandomTest() {
-        setTitle("Lab 1 - Verevkin Pavlo");
+        setTitle("Тестування розподілів (Лаб 2) - Веревкін Павло");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLayout(new BorderLayout());
+        setSize(1000, 700);
+        setLocationRelativeTo(null);
 
-        JPanel topPanel = new JPanel();
+        JPanel controlPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        
+        chooseRandom = new ChooseRandom();
+        chooseRandom.setTitle("Закон розподілу");
+        
         sampleSizeInput = new ChooseData();
-        sampleSizeInput.setTitle("Об'єм вибірки");
-        sampleSizeInput.setInt(400);
+        sampleSizeInput.setTitle("Обсяг вибірки (N*100)");
+        sampleSizeInput.setInt(400); 
         
-        startButton = new JButton("Start");
-        
-        topPanel.add(sampleSizeInput);
-        topPanel.add(startButton);
-        add(topPanel, BorderLayout.NORTH);
+        startButton = new JButton("Генерувати");
+        startButton.addActionListener(e -> runTest());
+
+        controlPanel.add(chooseRandom);
+        controlPanel.add(sampleSizeInput);
+        controlPanel.add(startButton);
 
         diagram = new Diagram();
+        diagram.setTitleText("Гістограма щільності розподілу");
+        
+        textArea = new JTextArea(12, 40);
+        textArea.setEditable(false);
+        histo = new Histo(); 
+
+        add(controlPanel, BorderLayout.NORTH);
         add(diagram, BorderLayout.CENTER);
-
-        textArea = new JTextArea(10, 40);
         add(new JScrollPane(textArea), BorderLayout.SOUTH);
-
-        histo = new Histo();
-
-        startButton.addActionListener(e -> runTest());
     }
 
     private void runTest() {
-        int size = sampleSizeInput.getInt();
-        histo.initFromTo(0.0, 1.0, 10);
-        for (int i = 0; i < size; i++) {
-            histo.add(Math.random());
+        try {
+            int size = sampleSizeInput.getInt();
+            StringBuilder sb = new StringBuilder(); // Створюємо буфер для чисел
+            
+            histo.init(); 
+            diagram.clear();
+            
+            for (int i = 0; i < size; i++) {
+                double value = chooseRandom.next(); 
+                histo.add(value); 
+                
+                // Додаємо число і відразу перенос рядка
+                sb.append(String.format("%.4f\n", value));
+            }
+
+            // Встановлюємо весь текст у textArea
+            textArea.setText(sb.toString()); 
+            // Перемотуємо в початок списку
+            textArea.setCaretPosition(0);
+
+            // Малюємо гістограму для звіту
+            histo.showRelFrec(diagram); 
+            
+        } catch (Exception ex) {
+            textArea.setText("Помилка: Перевірте коректність параметрів.");
         }
-        diagram.clear();
-        histo.showRelFrec(diagram);
-        textArea.setText(histo.toString());
     }
 
     public static void main(String[] args) {
