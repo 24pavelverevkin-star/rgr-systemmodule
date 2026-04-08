@@ -14,8 +14,8 @@ public class Model {
     private MultiActor seeders;
     
     // Гістограми розміру черг
-    DiscretHisto histoTruckQueue = new DiscretHisto();
-    DiscretHisto histoSeederQueue = new DiscretHisto();
+  private DiscretHisto histoTruckQueue = new DiscretHisto();
+    private DiscretHisto histoSeederQueue = new DiscretHisto();
     
     // Оригінали об'єктів для бригад
     private Truck originalTruck;
@@ -36,7 +36,7 @@ public class Model {
         getQueueTruckQueue().setPainter(gui.getTestPanel().getDiagramTruckQueue().getPainter());
         getQueueSeederQueue().setPainter(gui.getTestPanel().getDiagramSeederQueue().getPainter());
         
-        // Виправлений метод для виводу протоколу в консоль [cite: 1]
+        
         dispatcher.setProtocolFileName("Console"); 
     }
     
