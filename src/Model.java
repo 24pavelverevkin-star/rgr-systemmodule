@@ -1,9 +1,16 @@
 import process.Dispatcher;
 import process.MultiActor;
 import process.QueueForTransactions;
-import stat.DiscretHisto; 
+import stat.DiscretHisto;
+// --- Добавленные импорты для 5 этапа ---
+import stat.Histo;
+import stat.IHisto;
+import widgets.stat.IStatisticsable;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Model {
+// Добавлено implements IStatisticsable
+public class Model implements IStatisticsable {
     private Dispatcher dispatcher;
     private Gui gui;
     
@@ -13,9 +20,13 @@ public class Model {
     private MultiActor trucks;
     private MultiActor seeders;
     
-    // Гістограми розміру черг
+    // Гістограми розміру черг (DiscretHisto - для дискретних значень)
     private DiscretHisto histoTruckQueue = new DiscretHisto();
     private DiscretHisto histoSeederQueue = new DiscretHisto();
+    
+    // --- Додані гістограми для часу простою (Histo - для безперервних значень) ---
+    private Histo histoTruckWait = new Histo();
+    private Histo histoSeederWait = new Histo();
     
     // Оригінали об'єктів для бригад
     private Truck originalTruck;
@@ -39,6 +50,28 @@ public class Model {
         
         dispatcher.setProtocolFileName("Console"); 
     }
+
+    // ====================================================================
+    // РЕАЛІЗАЦІЯ ІНТЕРФЕЙСУ IStatisticsable (РГР ЕТАП 5)
+    // ====================================================================
+
+    @Override
+    public void initForStatistics() {
+        // Залишаємо порожнім, ініціалізація відбувається в геттерах
+    }
+
+    @Override
+    public Map<String, IHisto> getStatistics() {
+        Map<String, IHisto> map = new HashMap<>();
+        // Ці ключі будуть відображатися у випадаючому списку вкладки "Stat"
+        map.put("Довжина черги вантажівок", histoTruckQueue);
+        map.put("Довжина черги сівалок", histoSeederQueue);
+        map.put("Час простою вантажівок", histoTruckWait);
+        map.put("Час простою сівалок", histoSeederWait);
+        return map;
+    }
+
+    // ====================================================================
     
     public QueueForTransactions<Truck> getQueueTruckQueue() {
         if (queueTruckQueue == null) {
@@ -66,6 +99,9 @@ public class Model {
             originalTruck.setQueueSeederQueue(getQueueSeederQueue());
             originalTruck.setQueueTruckQueue(getQueueTruckQueue());
             
+            // Підключаємо гістограму очікування (РГР Етап 5)
+            originalTruck.setHistoForActorWaitingTime(histoTruckWait);
+            
             // Точні назви методів з твого SettingsPanel.java
             originalTruck.setRndTravel(gui.getSettingsPanel().getChooseRandomTruckTravel().getRandom());
             originalTruck.setRndLoadAtWarehouse(gui.getSettingsPanel().getChooseRandomTruckLoad().getRandom());
@@ -85,6 +121,9 @@ public class Model {
             
             // Підключаємо чергу сівалок
             originalSeeder.setQueueSeederQueue(getQueueSeederQueue());
+            
+            // Підключаємо гістограму очікування (РГР Етап 5)
+            originalSeeder.setHistoForActorWaitingTime(histoSeederWait);
             
             // Точна назва методу з твого SettingsPanel.java
             originalSeeder.setRndSow(gui.getSettingsPanel().getChooseRandomSeederWork().getRandom());

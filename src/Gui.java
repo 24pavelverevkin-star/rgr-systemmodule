@@ -1,9 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
+// Импортируем компонент StatisticsManager (убедитесь, что пакет указан верно для вашего фреймворка)
+import widgets.stat.StatisticsManager; 
 
 public class Gui extends JFrame {
     private SettingsPanel settingsPanel;
     private TestPanel testPanel;
+    
+    // Добавляем поле для менеджера статистики (РГР Етап 5)
+    private StatisticsManager statisticsManager; 
 
     public Gui() {
         setTitle("Моделювання BeanFeast - Веревкін Павло");
@@ -28,6 +33,14 @@ public class Gui extends JFrame {
         // Вкладка Test (РГР Етап 2)
         testPanel = new TestPanel();
         tabbedPane.addTab("Test", testPanel);
+        
+        // --- ДОБАВЛЕНО ДЛЯ 5 ЭТАПА ---
+        // Вкладка Stat 
+        statisticsManager = new StatisticsManager();
+        // Передаем фабрику моделей с помощью лямбда-выражения
+        statisticsManager.setFactory((d) -> new Model(d, this));
+        tabbedPane.addTab("Stat", statisticsManager);
+        // -----------------------------
 
         // Вкладка Info
         tabbedPane.addTab("Info", new InfoPanel());
@@ -39,13 +52,14 @@ public class Gui extends JFrame {
         
         updateDiagrams(); // Початкове налаштування
 
-        // Запуск моделювання при натисканні на кнопку "Старт"
+        // Запуск моделювання при натисканні на кнопку "Старт" (для режиму Test)
         settingsPanel.getButtonStart().addActionListener(e -> startTest());
     }
 
     // Геттери для доступу до панелей з класу Model
     public SettingsPanel getSettingsPanel() { return settingsPanel; }
     public TestPanel getTestPanel() { return testPanel; }
+    public StatisticsManager getStatisticsManager() { return statisticsManager; } // Добавлен геттер
 
     // Метод запуску процесу моделювання у режимі тестування
     private void startTest() {
