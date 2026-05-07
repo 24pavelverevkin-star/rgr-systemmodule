@@ -1,14 +1,17 @@
 import javax.swing.*;
 import java.awt.*;
-// Импортируем компонент StatisticsManager (убедитесь, что пакет указан верно для вашего фреймворка)
+// Імпорт компонентів (переконайся, що пакети відповідають твоему фреймворку)
 import widgets.stat.StatisticsManager; 
+// --- ДОДАНО ДЛЯ 6 ЕТАПУ (Експерименти) ---
+import widgets.experiments.ExperimentManager;
 
 public class Gui extends JFrame {
     private SettingsPanel settingsPanel;
     private TestPanel testPanel;
     
-    // Добавляем поле для менеджера статистики (РГР Етап 5)
     private StatisticsManager statisticsManager; 
+    // Поле для менеджера експериментів
+    private ExperimentManager experimentManager; 
 
     public Gui() {
         setTitle("Моделювання BeanFeast - Веревкін Павло");
@@ -34,13 +37,19 @@ public class Gui extends JFrame {
         testPanel = new TestPanel();
         tabbedPane.addTab("Test", testPanel);
         
-        // --- ДОБАВЛЕНО ДЛЯ 5 ЭТАПА ---
-        // Вкладка Stat 
+        // Вкладка Stat (РГР Етап 5)
         statisticsManager = new StatisticsManager();
-        // Передаем фабрику моделей с помощью лямбда-выражения
+        // Передаємо фабрику моделей
         statisticsManager.setFactory((d) -> new Model(d, this));
         tabbedPane.addTab("Stat", statisticsManager);
-        // -----------------------------
+        
+        // --- ДОДАНО ДЛЯ 6 ЕТАПУ (Експерименти) ---
+        // Вкладка Regres
+        experimentManager = new ExperimentManager();
+        // Передаємо ту саму фабрику моделей для автоматичних запусків
+        experimentManager.setFactory((d) -> new Model(d, this));
+        tabbedPane.addTab("Regres", experimentManager);
+        // -----------------------------------------
 
         // Вкладка Info
         tabbedPane.addTab("Info", new InfoPanel());
@@ -56,10 +65,11 @@ public class Gui extends JFrame {
         settingsPanel.getButtonStart().addActionListener(e -> startTest());
     }
 
-    // Геттери для доступу до панелей з класу Model
+    // Геттери для доступу до панелей
     public SettingsPanel getSettingsPanel() { return settingsPanel; }
     public TestPanel getTestPanel() { return testPanel; }
-    public StatisticsManager getStatisticsManager() { return statisticsManager; } // Добавлен геттер
+    public StatisticsManager getStatisticsManager() { return statisticsManager; }
+    public ExperimentManager getExperimentManager() { return experimentManager; }
 
     // Метод запуску процесу моделювання у режимі тестування
     private void startTest() {

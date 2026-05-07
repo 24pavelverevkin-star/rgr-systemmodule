@@ -6,11 +6,14 @@ import stat.DiscretHisto;
 import stat.Histo;
 import stat.IHisto;
 import widgets.stat.IStatisticsable;
+// --- Доданий імпорт для 6 етапу (Експерименти) ---
+import widgets.experiments.IExperimentable;
+
 import java.util.HashMap;
 import java.util.Map;
 
-// Добавлено implements IStatisticsable
-public class Model implements IStatisticsable {
+// Добавлено implements IStatisticsable, IExperimentable
+public class Model implements IStatisticsable, IExperimentable {
     private Dispatcher dispatcher;
     private Gui gui;
     
@@ -95,17 +98,22 @@ public class Model implements IStatisticsable {
             originalTruck.setNameForProtocol("Вантажівка");
             originalTruck.setFinishTime(gui.getSettingsPanel().getChooseDataFinishTime().getDouble());
             
-            // Підключаємо черги
             originalTruck.setQueueSeederQueue(getQueueSeederQueue());
             originalTruck.setQueueTruckQueue(getQueueTruckQueue());
-            
-            // Підключаємо гістограму очікування (РГР Етап 5)
             originalTruck.setHistoForActorWaitingTime(histoTruckWait);
             
-            // Точні назви методів з твого SettingsPanel.java
-            originalTruck.setRndTravel(gui.getSettingsPanel().getChooseRandomTruckTravel().getRandom());
-            originalTruck.setRndLoadAtWarehouse(gui.getSettingsPanel().getChooseRandomTruckLoad().getRandom());
-            originalTruck.setRndUnload(gui.getSettingsPanel().getChooseRandomSeederLoad().getRandom()); // Час заправки
+            // --- ЗАХИСТ ВІД NULL ДЛЯ ГЕНЕРАТОРІВ (Виправлено на Negexp) ---
+            rnd.Randomable rndTravel = gui.getSettingsPanel().getChooseRandomTruckTravel().getRandom();
+            if (rndTravel == null) rndTravel = new rnd.Negexp(2.0); // Запасний варіант
+            originalTruck.setRndTravel(rndTravel);
+            
+            rnd.Randomable rndLoad = gui.getSettingsPanel().getChooseRandomTruckLoad().getRandom();
+            if (rndLoad == null) rndLoad = new rnd.Negexp(1.5); // Запасний варіант
+            originalTruck.setRndLoadAtWarehouse(rndLoad);
+            
+            rnd.Randomable rndUnload = gui.getSettingsPanel().getChooseRandomSeederLoad().getRandom();
+            if (rndUnload == null) rndUnload = new rnd.Negexp(1.0); // Запасний варіант
+            originalTruck.setRndUnload(rndUnload);
             
             // Вантажівка може завантажити, наприклад, 3 сівалки за один рейс
             originalTruck.setMaxPortions(3); 
@@ -119,14 +127,13 @@ public class Model implements IStatisticsable {
             originalSeeder.setNameForProtocol("Сівалка");
             originalSeeder.setFinishTime(gui.getSettingsPanel().getChooseDataFinishTime().getDouble());
             
-            // Підключаємо чергу сівалок
             originalSeeder.setQueueSeederQueue(getQueueSeederQueue());
-            
-            // Підключаємо гістограму очікування (РГР Етап 5)
             originalSeeder.setHistoForActorWaitingTime(histoSeederWait);
             
-            // Точна назва методу з твого SettingsPanel.java
-            originalSeeder.setRndSow(gui.getSettingsPanel().getChooseRandomSeederWork().getRandom());
+            // --- ЗАХИСТ ВІД NULL ДЛЯ ГЕНЕРАТОРІВ (Виправлено на Negexp) ---
+            rnd.Randomable rndSow = gui.getSettingsPanel().getChooseRandomSeederWork().getRandom();
+            if (rndSow == null) rndSow = new rnd.Negexp(3.0); // Запасний варіант
+            originalSeeder.setRndSow(rndSow);
         }
         return originalSeeder;
     }
@@ -153,5 +160,33 @@ public class Model implements IStatisticsable {
             seeders.setNumberOfClones(gui.getSettingsPanel().getChooseDataSeedersCount().getInt());
         }
         return seeders;
+    }
+
+    // ====================================================================
+    // РЕАЛІЗАЦІЯ ІНТЕРФЕЙСУ IExperimentable (РГР ЕТАП 6 - ЛАБ 6)
+    // ====================================================================
+
+    @Override
+    public void initForExperiment(double factor) {
+        // Фактором експерименту виступатиме Кількість вантажівок (х).
+        // Оскільки factor має тип double, ми приводимо його до int.
+        getTrucks().setNumberOfClones((int) Math.round(factor));
+        
+        // Вимикаємо вивід у консоль для багаторазових запусків, щоб експерименти проходили миттєво
+        dispatcher.setProtocolFileName(""); 
+    }
+
+    @Override
+    public Map<String, Double> getResultOfExperiment() {
+        Map<String, Double> results = new HashMap<>();
+        
+        // Передаємо результати гістограм до менеджера експериментів (відгук системи - y)
+        // Ці ключі будуть доступні у випадаючому списку компонента ExperimentManager
+        results.put("Середня черга сівалок", histoSeederQueue.getAverage());
+        results.put("Середня черга вантажівок", histoTruckQueue.getAverage());
+        results.put("Середній час простою сівалок", histoSeederWait.getAverage());
+        results.put("Середній час простою вантаж.", histoTruckWait.getAverage());
+        
+        return results;
     }
 }
