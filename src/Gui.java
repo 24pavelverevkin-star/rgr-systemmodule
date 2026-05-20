@@ -4,6 +4,8 @@ import java.awt.*;
 import widgets.stat.StatisticsManager; 
 // --- ДОДАНО ДЛЯ 6 ЕТАПУ (Експерименти) ---
 import widgets.experiments.ExperimentManager;
+// --- ДОДАНО ДЛЯ 7 ЕТАПУ (Перехідні процеси) ---
+import widgets.trans.TransProcessManager;
 
 public class Gui extends JFrame {
     private SettingsPanel settingsPanel;
@@ -12,6 +14,8 @@ public class Gui extends JFrame {
     private StatisticsManager statisticsManager; 
     // Поле для менеджера експериментів
     private ExperimentManager experimentManager; 
+    // Поле для менеджера перехідних процесів
+    private TransProcessManager transProcessManager; 
 
     public Gui() {
         setTitle("Моделювання BeanFeast - Веревкін Павло");
@@ -51,6 +55,14 @@ public class Gui extends JFrame {
         tabbedPane.addTab("Regres", experimentManager);
         // -----------------------------------------
 
+        // --- ДОДАНО ДЛЯ 7 ЕТАПУ (Перехідні процеси) ---
+        // Вкладка Transient
+        transProcessManager = new TransProcessManager();
+        // Передаємо ту саму фабрику моделей
+        transProcessManager.setFactory((d) -> new Model(d, this));
+        tabbedPane.addTab("Transient", transProcessManager);
+        // -----------------------------------------
+
         // Вкладка Info
         tabbedPane.addTab("Info", new InfoPanel());
 
@@ -70,6 +82,7 @@ public class Gui extends JFrame {
     public TestPanel getTestPanel() { return testPanel; }
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
     public ExperimentManager getExperimentManager() { return experimentManager; }
+    public TransProcessManager getTransProcessManager() { return transProcessManager; }
 
     // Метод запуску процесу моделювання у режимі тестування
     private void startTest() {

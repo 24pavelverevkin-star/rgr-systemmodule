@@ -8,12 +8,15 @@ import stat.IHisto;
 import widgets.stat.IStatisticsable;
 // --- Доданий імпорт для 6 етапу (Експерименти) ---
 import widgets.experiments.IExperimentable;
+// --- Додані імпорти для 7 етапу (Перехідні процеси) ---
+import widgets.trans.ITransProcesable;
+import widgets.trans.ITransMonitoring;
 
 import java.util.HashMap;
 import java.util.Map;
 
-// Добавлено implements IStatisticsable, IExperimentable
-public class Model implements IStatisticsable, IExperimentable {
+// Добавлено implements IStatisticsable, IExperimentable, ITransProcesable
+public class Model implements IStatisticsable, IExperimentable, ITransProcesable {
     private Dispatcher dispatcher;
     private Gui gui;
     
@@ -188,5 +191,31 @@ public class Model implements IStatisticsable, IExperimentable {
         results.put("Середній час простою вантаж.", histoTruckWait.getAverage());
         
         return results;
+    }
+
+    // ====================================================================
+    // РЕАЛІЗАЦІЯ ІНТЕРФЕЙСУ ITransProcesable (РГР ЕТАП 7 - ЛАБ 7)
+    // ====================================================================
+
+    @Override
+    public void initForTrans(double finishTime) {
+        // Встановлюємо час моделювання в інтерфейсі
+        gui.getSettingsPanel().getChooseDataFinishTime().setDouble(finishTime);
+        
+        // Встановлюємо цей же час для оригіналів акторів
+        getOriginalTruck().setFinishTime(finishTime);
+        getOriginalSeeder().setFinishTime(finishTime);
+    }
+
+    @Override
+    public Map<String, ITransMonitoring> getMonitoringObjects() {
+        Map<String, ITransMonitoring> map = new HashMap<>();
+        
+        // Передаємо черги для дослідження перехідного процесу
+        // QueueForTransactions з фреймворку Simulation вже реалізує ITransMonitoring
+        map.put("Черга вантажівок", (ITransMonitoring) getQueueTruckQueue());
+        map.put("Черга сівалок", (ITransMonitoring) getQueueSeederQueue());
+        
+        return map;
     }
 }
