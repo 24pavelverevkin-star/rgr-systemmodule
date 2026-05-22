@@ -2,20 +2,16 @@ import process.Dispatcher;
 import process.MultiActor;
 import process.QueueForTransactions;
 import stat.DiscretHisto;
-// --- Добавленные импорты для 5 этапа ---
 import stat.Histo;
 import stat.IHisto;
 import widgets.stat.IStatisticsable;
-// --- Доданий імпорт для 6 етапу (Експерименти) ---
 import widgets.experiments.IExperimentable;
-// --- Додані імпорти для 7 етапу (Перехідні процеси) ---
 import widgets.trans.ITransProcesable;
 import widgets.trans.ITransMonitoring;
 
 import java.util.HashMap;
 import java.util.Map;
 
-// Добавлено implements IStatisticsable, IExperimentable, ITransProcesable
 public class Model implements IStatisticsable, IExperimentable, ITransProcesable {
     private Dispatcher dispatcher;
     private Gui gui;
@@ -26,15 +22,12 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
     private MultiActor trucks;
     private MultiActor seeders;
     
-    // Гістограми розміру черг (DiscretHisto - для дискретних значень)
     private DiscretHisto histoTruckQueue = new DiscretHisto();
     private DiscretHisto histoSeederQueue = new DiscretHisto();
     
-    // --- Додані гістограми для часу простою (Histo - для безперервних значень) ---
     private Histo histoTruckWait = new Histo();
     private Histo histoSeederWait = new Histo();
     
-    // Оригінали об'єктів для бригад
     private Truck originalTruck;
     private Seeder originalSeeder;
     
@@ -50,26 +43,24 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
     }
     
     public void initForTest() {
-        // Підключення діаграм з TestPanel
+
+        double fTime = gui.getSettingsPanel().getChooseDataFinishTime().getDouble();
+        getOriginalTruck().setFinishTime(fTime);
+        getOriginalSeeder().setFinishTime(fTime);
+
         getQueueTruckQueue().setPainter(gui.getTestPanel().getDiagramTruckQueue().getPainter());
         getQueueSeederQueue().setPainter(gui.getTestPanel().getDiagramSeederQueue().getPainter());
         
-        dispatcher.setProtocolFileName("Console"); 
+        dispatcher.setProtocolFileName("Console");
     }
-
-    // ====================================================================
-    // РЕАЛІЗАЦІЯ ІНТЕРФЕЙСУ IStatisticsable (РГР ЕТАП 5)
-    // ====================================================================
 
     @Override
     public void initForStatistics() {
-        // Залишаємо порожнім, ініціалізація відбувається в геттерах
     }
 
     @Override
     public Map<String, IHisto> getStatistics() {
         Map<String, IHisto> map = new HashMap<>();
-        // Ці ключі будуть відображатися у випадаючому списку вкладки "Stat"
         map.put("Довжина черги вантажівок", histoTruckQueue);
         map.put("Довжина черги сівалок", histoSeederQueue);
         map.put("Час простою вантажівок", histoTruckWait);
@@ -77,8 +68,6 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
         return map;
     }
 
-    // ====================================================================
-    
     public QueueForTransactions<Truck> getQueueTruckQueue() {
         if (queueTruckQueue == null) {
             queueTruckQueue = new QueueForTransactions<>("Черга вантажівок", dispatcher, histoTruckQueue);
@@ -93,8 +82,6 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
         return queueSeederQueue;
     }
 
-    // --- Оригінали акторів та їх ініціалізація ---
-
     public Truck getOriginalTruck() {
         if (originalTruck == null) {
             originalTruck = new Truck();
@@ -105,20 +92,18 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
             originalTruck.setQueueTruckQueue(getQueueTruckQueue());
             originalTruck.setHistoForActorWaitingTime(histoTruckWait);
             
-            // --- ЗАХИСТ ВІД NULL ДЛЯ ГЕНЕРАТОРІВ (Виправлено на Negexp) ---
             rnd.Randomable rndTravel = gui.getSettingsPanel().getChooseRandomTruckTravel().getRandom();
-            if (rndTravel == null) rndTravel = new rnd.Negexp(2.0); // Запасний варіант
+            if (rndTravel == null) rndTravel = new rnd.Negexp(2.0);
             originalTruck.setRndTravel(rndTravel);
             
             rnd.Randomable rndLoad = gui.getSettingsPanel().getChooseRandomTruckLoad().getRandom();
-            if (rndLoad == null) rndLoad = new rnd.Negexp(1.5); // Запасний варіант
+            if (rndLoad == null) rndLoad = new rnd.Negexp(1.5);
             originalTruck.setRndLoadAtWarehouse(rndLoad);
             
             rnd.Randomable rndUnload = gui.getSettingsPanel().getChooseRandomSeederLoad().getRandom();
-            if (rndUnload == null) rndUnload = new rnd.Negexp(1.0); // Запасний варіант
+            if (rndUnload == null) rndUnload = new rnd.Negexp(1.0);
             originalTruck.setRndUnload(rndUnload);
             
-            // Вантажівка може завантажити, наприклад, 3 сівалки за один рейс
             originalTruck.setMaxPortions(3); 
         }
         return originalTruck;
@@ -133,22 +118,18 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
             originalSeeder.setQueueSeederQueue(getQueueSeederQueue());
             originalSeeder.setHistoForActorWaitingTime(histoSeederWait);
             
-            // --- ЗАХИСТ ВІД NULL ДЛЯ ГЕНЕРАТОРІВ (Виправлено на Negexp) ---
             rnd.Randomable rndSow = gui.getSettingsPanel().getChooseRandomSeederWork().getRandom();
-            if (rndSow == null) rndSow = new rnd.Negexp(3.0); // Запасний варіант
+            if (rndSow == null) rndSow = new rnd.Negexp(3.0);
             originalSeeder.setRndSow(rndSow);
         }
         return originalSeeder;
     }
     
-    // --- Створення бригад за допомогою MultiActor ---
-
     public MultiActor getTrucks() {
         if (trucks == null) {
             trucks = new MultiActor();
             trucks.setNameForProtocol("Бригада вантажівок");
             trucks.setOriginal(getOriginalTruck()); 
-            // Беремо кількість вантажівок з інтерфейсу
             trucks.setNumberOfClones(gui.getSettingsPanel().getChooseDataTrucksCount().getInt()); 
         }
         return trucks;
@@ -159,23 +140,14 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
             seeders = new MultiActor();
             seeders.setNameForProtocol("Бригада сівалок");
             seeders.setOriginal(getOriginalSeeder());
-            // Беремо кількість сівалок з інтерфейсу
             seeders.setNumberOfClones(gui.getSettingsPanel().getChooseDataSeedersCount().getInt());
         }
         return seeders;
     }
 
-    // ====================================================================
-    // РЕАЛІЗАЦІЯ ІНТЕРФЕЙСУ IExperimentable (РГР ЕТАП 6 - ЛАБ 6)
-    // ====================================================================
-
     @Override
     public void initForExperiment(double factor) {
-        // Фактором експерименту виступатиме Кількість вантажівок (х).
-        // Оскільки factor має тип double, ми приводимо його до int.
         getTrucks().setNumberOfClones((int) Math.round(factor));
-        
-        // Вимикаємо вивід у консоль для багаторазових запусків, щоб експерименти проходили миттєво
         dispatcher.setProtocolFileName(""); 
     }
 
@@ -183,8 +155,6 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
     public Map<String, Double> getResultOfExperiment() {
         Map<String, Double> results = new HashMap<>();
         
-        // Передаємо результати гістограм до менеджера експериментів (відгук системи - y)
-        // Ці ключі будуть доступні у випадаючому списку компонента ExperimentManager
         results.put("Середня черга сівалок", histoSeederQueue.getAverage());
         results.put("Середня черга вантажівок", histoTruckQueue.getAverage());
         results.put("Середній час простою сівалок", histoSeederWait.getAverage());
@@ -193,16 +163,9 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
         return results;
     }
 
-    // ====================================================================
-    // РЕАЛІЗАЦІЯ ІНТЕРФЕЙСУ ITransProcesable (РГР ЕТАП 7 - ЛАБ 7)
-    // ====================================================================
-
     @Override
     public void initForTrans(double finishTime) {
-        // Встановлюємо час моделювання в інтерфейсі
         gui.getSettingsPanel().getChooseDataFinishTime().setDouble(finishTime);
-        
-        // Встановлюємо цей же час для оригіналів акторів
         getOriginalTruck().setFinishTime(finishTime);
         getOriginalSeeder().setFinishTime(finishTime);
     }
@@ -211,8 +174,6 @@ public class Model implements IStatisticsable, IExperimentable, ITransProcesable
     public Map<String, ITransMonitoring> getMonitoringObjects() {
         Map<String, ITransMonitoring> map = new HashMap<>();
         
-        // Передаємо черги для дослідження перехідного процесу
-        // QueueForTransactions з фреймворку Simulation вже реалізує ITransMonitoring
         map.put("Черга вантажівок", (ITransMonitoring) getQueueTruckQueue());
         map.put("Черга сівалок", (ITransMonitoring) getQueueSeederQueue());
         

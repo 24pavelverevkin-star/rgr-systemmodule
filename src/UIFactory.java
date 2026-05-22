@@ -7,11 +7,11 @@ import javax.imageio.ImageIO;
 
 public class UIFactory {
 
-    // Метод для відображення тексту ТЗ (Лістинг 3.1)
+    
     public static JTextPane createTzPane() {
         JTextPane jTextPane = new JTextPane();
         jTextPane.setEditable(false);
-        String str = "/tz.htm"; // Шлях до файлу ТЗ у корені src
+        String str = "/tz.htm"; 
         URL url = UIFactory.class.getResource(str);
         if (url != null) {
             try {
@@ -25,7 +25,6 @@ public class UIFactory {
         return jTextPane;
     }
 
-    // Метод для відображення фото (Лістинг 3.2)
     public static JPanel createPhotoPanel() {
         return new JPanel() {
             @Override
@@ -52,7 +51,6 @@ public class UIFactory {
                     }
                     
                     Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-                    // Центрування зображення
                     int x = (getWidth() - width) / 2;
                     int y = (getHeight() - height) / 2;
                     g2d.drawImage(scaledImg, x, y, null);

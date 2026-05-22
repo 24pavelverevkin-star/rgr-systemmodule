@@ -1,10 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-// Імпорт компонентів (переконайся, що пакети відповідають твоему фреймворку)
 import widgets.stat.StatisticsManager; 
-// --- ДОДАНО ДЛЯ 6 ЕТАПУ (Експерименти) ---
 import widgets.experiments.ExperimentManager;
-// --- ДОДАНО ДЛЯ 7 ЕТАПУ (Перехідні процеси) ---
 import widgets.trans.TransProcessManager;
 
 public class Gui extends JFrame {
@@ -12,9 +9,7 @@ public class Gui extends JFrame {
     private TestPanel testPanel;
     
     private StatisticsManager statisticsManager; 
-    // Поле для менеджера експериментів
     private ExperimentManager experimentManager; 
-    // Поле для менеджера перехідних процесів
     private TransProcessManager transProcessManager; 
 
     public Gui() {
@@ -32,78 +27,55 @@ public class Gui extends JFrame {
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Вкладка ТЗ
         JPanel tzPanel = new JPanel(new BorderLayout());
         tzPanel.add(new JScrollPane(UIFactory.createTzPane()), BorderLayout.CENTER);
         tabbedPane.addTab("ТЗ", tzPanel);
 
-        // Вкладка Test (РГР Етап 2)
         testPanel = new TestPanel();
         tabbedPane.addTab("Test", testPanel);
         
-        // Вкладка Stat (РГР Етап 5)
         statisticsManager = new StatisticsManager();
-        // Передаємо фабрику моделей
         statisticsManager.setFactory((d) -> new Model(d, this));
         tabbedPane.addTab("Stat", statisticsManager);
         
-        // --- ДОДАНО ДЛЯ 6 ЕТАПУ (Експерименти) ---
-        // Вкладка Regres
         experimentManager = new ExperimentManager();
-        // Передаємо ту саму фабрику моделей для автоматичних запусків
         experimentManager.setFactory((d) -> new Model(d, this));
         tabbedPane.addTab("Regres", experimentManager);
-        // -----------------------------------------
 
-        // --- ДОДАНО ДЛЯ 7 ЕТАПУ (Перехідні процеси) ---
-        // Вкладка Transient
         transProcessManager = new TransProcessManager();
-        // Передаємо ту саму фабрику моделей
         transProcessManager.setFactory((d) -> new Model(d, this));
         tabbedPane.addTab("Transient", transProcessManager);
-        // -----------------------------------------
 
-        // Вкладка Info
         tabbedPane.addTab("Info", new InfoPanel());
 
         splitPane.setRightComponent(tabbedPane);
 
-        // Автоматичне оновлення осей діаграм
         settingsPanel.getChooseDataFinishTime().addCaretListener(e -> updateDiagrams());
         
-        updateDiagrams(); // Початкове налаштування
+        updateDiagrams(); 
 
-        // Запуск моделювання при натисканні на кнопку "Старт" (для режиму Test)
         settingsPanel.getButtonStart().addActionListener(e -> startTest());
     }
 
-    // Геттери для доступу до панелей
     public SettingsPanel getSettingsPanel() { return settingsPanel; }
     public TestPanel getTestPanel() { return testPanel; }
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
     public ExperimentManager getExperimentManager() { return experimentManager; }
     public TransProcessManager getTransProcessManager() { return transProcessManager; }
 
-    // Метод запуску процесу моделювання у режимі тестування
     private void startTest() {
-        // Очищаємо діаграми перед новим запуском
         testPanel.getDiagramSeederQueue().clear();
         testPanel.getDiagramTruckQueue().clear();
 
-        // Створюємо диспетчера
         process.Dispatcher dispatcher = new process.Dispatcher();
 
-        // Створюємо модель
         Model model = new Model(dispatcher, this);
 
-        // Робимо кнопку «Старт» недоступною на період роботи моделі
         settingsPanel.getButtonStart().setEnabled(false);
         dispatcher.addDispatcherFinishListener(() -> settingsPanel.getButtonStart().setEnabled(true));
 
-        // Готуємо модель до роботи у режимі тестування
         model.initForTest();
 
-        // Запускаємо модель
         dispatcher.start();
     }
 

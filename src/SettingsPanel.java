@@ -8,16 +8,15 @@ public class SettingsPanel extends JPanel {
     private ChooseData chooseDataTrucksCount;
     private ChooseData chooseDataSeedersCount;
     
-    // Генератори випадкових величин для Варіанту 4
-    private ChooseRandom chooseRandomTruckTravel; // Час вантажівки у дорозі
-    private ChooseRandom chooseRandomSeederWork;  // Час висіву сеялки
-    private ChooseRandom chooseRandomSeederLoad;  // Час заправки сеялки
-    private ChooseRandom chooseRandomTruckLoad;   // Час завантаження вантажівки на складі
+    private ChooseRandom chooseRandomTruckTravel;
+    private ChooseRandom chooseRandomSeederWork;
+    private ChooseRandom chooseRandomSeederLoad;
+    private ChooseRandom chooseRandomTruckLoad;
     
     private JButton buttonStart;
 
     public SettingsPanel() {
-        setLayout(new GridLayout(9, 1, 5, 5)); // Збільшено кількість рядків
+        setLayout(new GridLayout(9, 1, 5, 5));
         setBorder(BorderFactory.createTitledBorder("Параметри моделі"));
 
         chooseDataFinishTime = new ChooseData();
@@ -32,18 +31,21 @@ public class SettingsPanel extends JPanel {
         chooseDataSeedersCount.setTitle("Кількість сівалок");
         chooseDataSeedersCount.setInt(5);
 
-        // Налаштування генераторів
         chooseRandomTruckTravel = new ChooseRandom();
         chooseRandomTruckTravel.setTitle("Час вантажівки у дорозі");
+        chooseRandomTruckTravel.setRandom(new rnd.Negexp(2.0));
         
         chooseRandomSeederWork = new ChooseRandom();
         chooseRandomSeederWork.setTitle("Час висіву сеялкою");
+        chooseRandomSeederWork.setRandom(new rnd.Negexp(3.0));
         
         chooseRandomSeederLoad = new ChooseRandom();
         chooseRandomSeederLoad.setTitle("Час заправки сеялки");
+        chooseRandomSeederLoad.setRandom(new rnd.Negexp(1.0));
 
         chooseRandomTruckLoad = new ChooseRandom();
         chooseRandomTruckLoad.setTitle("Час завантаження вантажівки");
+        chooseRandomTruckLoad.setRandom(new rnd.Negexp(1.5));
 
         buttonStart = new JButton("Старт");
 
@@ -57,7 +59,6 @@ public class SettingsPanel extends JPanel {
         add(buttonStart);
     }
 
-    // Публічні геттери для доступу 
     public ChooseData getChooseDataFinishTime() { return chooseDataFinishTime; }
     public ChooseRandom getChooseRandomTruckTravel() { return chooseRandomTruckTravel; }
     public ChooseRandom getChooseRandomSeederWork() { return chooseRandomSeederWork; }

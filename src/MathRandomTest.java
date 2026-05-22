@@ -57,7 +57,7 @@ public class MathRandomTest extends JFrame {
     private void runTest() {
         try {
             int size = sampleSizeInput.getInt();
-            StringBuilder sb = new StringBuilder(); // Створюємо буфер для чисел
+            StringBuilder sb = new StringBuilder(); 
             
             histo.init(); 
             diagram.clear();
@@ -66,16 +66,16 @@ public class MathRandomTest extends JFrame {
                 double value = chooseRandom.next(); 
                 histo.add(value); 
                 
-                // Додаємо число і відразу перенос рядка
+               
                 sb.append(String.format("%.4f\n", value));
             }
 
-            // Встановлюємо весь текст у textArea
+          
             textArea.setText(sb.toString()); 
-            // Перемотуємо в початок списку
+            
             textArea.setCaretPosition(0);
 
-            // Малюємо гістограму для звіту
+            
             histo.showRelFrec(diagram); 
             
         } catch (Exception ex) {

@@ -13,7 +13,6 @@ public class Truck extends Actor {
     private Randomable rndLoadAtWarehouse;
     private Randomable rndUnload;
     
-    // Количество сеялок, которые может загрузить один грузовик
     private int maxPortions = 3; 
 
     public void setFinishTime(double finishTime) { this.finishTime = finishTime; }
@@ -26,7 +25,6 @@ public class Truck extends Actor {
 
     @Override
     protected void rule() throws DispatcherFinishException {
-        // Условие наличия сеялки в очереди
         BooleanSupplier seederAvailable = () -> queueSeederQueue.size() > 0;
 
         while (getDispatcher().getCurrentTime() <= finishTime) {
@@ -37,27 +35,20 @@ public class Truck extends Actor {
             holdForTime(rndTravel.next());
 
             int portions = maxPortions;
-            // Регистрируем грузовик в очереди на поле
             queueTruckQueue.addLast(this); 
 
-            // Цикл выгрузки зерна сеялкам
             while (portions > 0) {
-                // Если сеялок нет, грузовик ожидает их появления
                 waitForCondition(seederAvailable, "чекає на порожню сівалку");
 
-                // Забираем первую сеялку из очереди
                 Seeder seeder = queueSeederQueue.removeFirst();
 
                 getDispatcher().printToProtocol("  " + getNameForProtocol() + " пересипає зерно в " + seeder.getNameForProtocol());
-                // Имитация затрат времени на пересыпку зерна
                 holdForTime(rndUnload.next());
 
-                // Уведомляем сеялку об окончании загрузки
                 seeder.setLoaded(true);
                 portions--;
             }
 
-            // Грузовик пуст, покидает очередь
             queueTruckQueue.remove(this); 
             
             getDispatcher().printToProtocol("  " + getNameForProtocol() + " повертається на склад.");
